@@ -11,6 +11,29 @@ https://simplecodetips.wordpress.com/2018/06/14/instalacion-de-xampp-en-ubuntu-1
 - Cuando ejecutaba un findOne() sin indicar atributos ejecutaba (select * from) incluyendo un atributo no declarado: `categoriumId`. 
 
 Executing (default): SELECT `id`, `nombre`, `descripcion`, `url`, `idCategoria`, `createdAt`, `updatedAt`, `categoriumId` FROM `links` AS `link` WHERE `link`.`id` = '5';
-PUT /links/5 500 136.081 ms - 21
 
--
+
+- Devolver registros de una entidad, y todos los cuales estan relacionadas a la misma.
+
+.findAll({
+        attributes: ["id", "nombre"],
+        include: [
+            {model: models.link, as: models.link.tableName}
+	})
+
+#### Declarando relaciones:
+
+categoria.associate = function(models) {
+    // 1:N
+     categoria.hasMany(models.link, {
+       as: 'links',
+       foreignKey: 'idCategoria'
+      })
+  }
+
+link.associate = function(models) {
+    // N:1
+    link.belongsTo(models.categoria, {
+      foreignKey: 'idCategoria'
+    })
+  }
