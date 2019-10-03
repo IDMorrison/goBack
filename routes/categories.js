@@ -2,18 +2,22 @@ var express = require('express');
 var router = express.Router();
 var models = require('../models');
 
-// GET: Categorias
+// GET: 
 router.get('/', function(req, res) {
     
     models.categoria
     .findAll({
-        attributes: ["id", "nombre"]
+        attributes: ["id", "nombre"],
+        include: [
+            {model: models.link, as: models.link.tableName}
+        ]
     })
     .then( (categorias) => res.send(categorias))
     .catch( () => res.sendStatus(500));
     
 });
 
+// GET: /:id
 const getOneCategorie = (req, res) => {
     const onSuccess = (categorie) => 
         res.send(categorie);
@@ -26,9 +30,30 @@ const getOneCategorie = (req, res) => {
     
 }
 
-router.get('/:id', getOneCategorie)
+router.get('/:id', getOneCategorie);
 
-// POST: Categoria
+// PUT: 
+const postCategorie = (req, res) => {
+    const onSuccess = (categorie) =>
+        categorie.update(
+            {nombre: req.body.nombre},
+            {fields: ["nombre"]}
+        )
+        .then(() => res.sendStatus(200))
+        .catch(() => res.sendStatus(500));
+
+
+    findCategoria(req.params.id, {
+        onSuccess,
+        onNotFound: () => res.sendStatus(404),
+        onError: () => res.sendStatus(500)
+    })
+}
+
+
+router.put('/:id', postCategorie);
+
+// POST: 
 router.post('/', function(req, res){
     models.categoria
     .create(
@@ -41,12 +66,13 @@ router.post('/', function(req, res){
 const findCategoria = (id, { onSuccess, onNotFound, onError }) => 
     models.categoria
     .findOne({
-        where: {id}
+        where: {id},
+        include: [{model: models.link, as: models.link.tableName}]
     })
     .then((categoria) => categoria ? onSuccess(categoria) : onNotFound())
     .catch(() => onError() );
 
-// DELETE: Categoria
+// DELETE: 
 router.delete('/:id', function(req, res){
     const onSuccess = (categoria) => 
         categoria
